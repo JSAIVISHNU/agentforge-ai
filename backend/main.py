@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from sqlalchemy import text
+
+from database import engine
 
 app = FastAPI(
     title="AgentForge AI API",
@@ -13,6 +16,16 @@ def health_check():
         "status": "healthy",
         "service": "AgentForge AI API",
     }
+
+
+@app.get("/health/db")
+def db_health_check():
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        return {"status": "healthy", "database": "connected"}
+    except Exception as exc:  # pragma: no cover
+        return {"status": "unhealthy", "database": str(exc)}
 
 
 @app.get("/")
